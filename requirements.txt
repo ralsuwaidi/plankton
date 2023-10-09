@@ -1,0 +1,11 @@
+openai
+langchain
+tiktoken
+pdf2image
+pdfminer.six
+jq
+python-dotenv
+chromadb==0.3.29
+click
+flask
+pymongo
