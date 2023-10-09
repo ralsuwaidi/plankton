@@ -5,6 +5,7 @@ from plankton.embed_data import get_embeddings, embed_data
 from plankton.conversational_agent import ChatbotManager
 from pymongo import MongoClient
 import os
+from plankton.database import Database
 
 
 # Set up logging with time
@@ -15,7 +16,10 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-client = MongoClient("mongo:27017")
+# client = MongoClient("mongo:27017")
+
+
+Database.initialize()
 
 
 @app.route("/ask", methods=["POST"])
@@ -36,6 +40,8 @@ def ask():
     agent = chatbotManager.initialize_agent()
     logger.info(f'Agent question: "{question}"')
     response = agent(question)
+
+    Database.insert("query", {"question": question, "response": response})
 
     return jsonify(response)
 

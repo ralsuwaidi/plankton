@@ -15,8 +15,6 @@ services:
     build:
       context: .
       target: builder
-    # flask requires SIGINT to stop gracefully
-    # (default stop signal from Compose is SIGTERM)
     stop_signal: SIGINT
     environment:
       - FLASK_SERVER_PORT=9091
@@ -27,3 +25,17 @@ services:
 
   mongo:
     image: mongo
+    volumes:
+      - mongo_data:/data/db
+
+  mongo-express:
+    env_file:
+      - .env
+    image: mongo-express
+    ports:
+      - 8081:8081
+    depends_on:
+      - mongo
+
+volumes:
+  mongo_data:
