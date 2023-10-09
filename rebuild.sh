@@ -1,0 +1,1 @@
+docker run --rm plankton-backend python main.py --delete-existing-db
