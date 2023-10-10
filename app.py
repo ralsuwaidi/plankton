@@ -1,9 +1,9 @@
 from flask import Flask, request, jsonify
 import logging
-from plankton.data_processing import get_docs, split_documents
 from plankton.embed_data import get_embeddings, embed_data
 from plankton.conversational_agent import ChatbotManager
-from pymongo import MongoClient
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import os
 from plankton.database import Database
 
@@ -16,13 +16,16 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-# client = MongoClient("mongo:27017")
+limiter = Limiter(
+    app=app, key_func=get_remote_address, default_limits=["200 per day", "50 per hour"]
+)
 
 
 Database.initialize()
 
 
 @app.route("/ask", methods=["POST"])
+@limiter.limit("5 per minute")
 def ask():
     data = request.get_json(force=True)
     question = data.get("question", "Who is the minister of finance")

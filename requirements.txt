@@ -9,3 +9,5 @@ chromadb==0.3.29
 click
 flask
 pymongo
+flask_limiter
+python-telegram-bot[all]

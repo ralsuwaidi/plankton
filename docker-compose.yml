@@ -24,6 +24,20 @@ services:
     depends_on:
       - mongo
 
+  telegram_bot:
+    build:
+      context: .
+      target: builder # assuming the backend Dockerfile is Dockerfile
+    stop_signal: SIGINT
+    command: python telebot.py
+    volumes:
+      - .:/src
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+
   mongo:
     image: mongo
     volumes:
