@@ -21,9 +21,11 @@ import logging
 import os
 from dotenv import load_dotenv
 from telegram import *
+from telegram.ext import *
 from telegram import __version__ as TG_VER
 import requests
 import json
+
 
 try:
     from telegram import __version_info__
@@ -62,11 +64,16 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def start(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /start is issued."""
     user = update.effective_user
-    await update.message.reply_html(
-        rf"Hello this is a simple chatbot that is trained on the MOF website. Arabic works but is not optimized",
+    await update.message.reply_markdown(
+        f"Hello {user.first_name}, welcome to the Ministry of Finance chatbot!\n\n"
+        "_This bot is currently in beta version, and we're continuously working to improve it._\n\n"
+        "Please feel free to ask any questions. At the end of our conversation, you have two options:\n"
+        "1. Type /positive `<message>` if you had a good experience. You can also add some text after the command to give more specifics.\n"
+        "2. Type /improve `<message>` if you have suggestions or improvements. Again, you can add some text after the command to give more specifics.\n\n"
+        "Thank you for helping us to enhance our platform.",
         reply_markup=ForceReply(selective=True),
     )
 
@@ -114,15 +121,6 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 def main() -> None:
-    """
-    Start the bot.
-
-    Args:
-    - None
-
-    Returns:
-    - None
-    """
     # Create the Application and pass it your bot's token.
     token = os.getenv("TELEGRAM_TOKEN")
     if not token:
