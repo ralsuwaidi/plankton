@@ -8,6 +8,7 @@ import os
 from plankton.database import Database
 from functools import wraps
 from dotenv import load_dotenv
+from flask_restful import Resource, Api
 
 
 # Set up logging with time
@@ -21,6 +22,8 @@ app = Flask(__name__)
 limiter = Limiter(
     app=app, key_func=get_remote_address, default_limits=["200 per day", "50 per hour"]
 )
+
+api = Api(app)
 
 # Define the path to the .env file
 dotenv_path = os.path.join(".env")
@@ -53,31 +56,33 @@ def token_required(f):
     return decorated
 
 
-@app.route("/ask", methods=["POST"])
-@limiter.limit("10 per minute")
-@token_required
-def ask():
-    data = request.get_json(force=True)
-    question = data.get("question", "Who is the minister of finance")
+class Ask(Resource):
+    @limiter.limit("10 per minute")
+    @token_required
+    def post(self):
+        data = request.get_json(force=True)
+        question = data.get("question", "Who is the minister of finance")
 
-    docs = None
+        docs = None
 
-    # Embed all docs and get vectorstore
-    logger.info("Embedding documents")
-    embed = get_embeddings()
-    logger.info("Creating vectorstore from embeddings")
+        # Embed all docs and get vectorstore
+        logger.info("Embedding documents")
+        embed = get_embeddings()
+        logger.info("Creating vectorstore from embeddings")
 
-    vectorstore = embed_data(docs=docs, embedding=embed)
+        vectorstore = embed_data(docs=docs, embedding=embed)
 
-    chatbotManager = ChatbotManager(vectorstore)
-    agent = chatbotManager.initialize_agent()
-    logger.info(f'Agent question: "{question}"')
-    response = agent(question)
+        chatbotManager = ChatbotManager(vectorstore)
+        agent = chatbotManager.initialize_agent()
+        logger.info(f'Agent question: "{question}"')
+        response = agent(question)
 
-    Database.insert("query", {"question": question, "response": response})
+        Database.insert("query", {"question": question, "response": response})
 
-    return jsonify(response)
+        return jsonify(response)
 
+
+api.add_resource(Ask, "/ask")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=os.environ.get("FLASK_SERVER_PORT", 9090), debug=True)

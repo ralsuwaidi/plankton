@@ -11,3 +11,4 @@ flask
 pymongo
 flask_limiter
 python-telegram-bot[all]
+flask-restful
