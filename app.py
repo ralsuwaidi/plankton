@@ -9,7 +9,7 @@ from plankton.database import Database
 from functools import wraps
 from dotenv import load_dotenv
 from flask_restful import Resource, Api, abort
-
+import datetime
 
 # Set up logging with time
 logging.basicConfig(
@@ -84,6 +84,7 @@ class Ask(Resource):
             "question": question,
             "response": response,
             "user_id": user_id,
+            "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
 
         Database.insert("query", insert_data)

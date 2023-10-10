@@ -25,6 +25,7 @@ from telegram.ext import *
 from telegram import __version__ as TG_VER
 import requests
 import json
+import datetime
 
 
 try:
@@ -106,6 +107,7 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             "user_name": update.message.from_user.username,
             "first_name": update.message.from_user.first_name,
             "last_name": update.message.from_user.last_name,
+            "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         },
         headers={"X-API-KEY": os.getenv("API_SECRET_TOKEN")},
         timeout=300,
