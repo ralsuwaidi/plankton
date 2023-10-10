@@ -98,8 +98,15 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     # Send the user message to the MOF website chatbot API
     response = requests.post(
-        "http://backend:9091/ask",
-        json={"question": message},
+        "http://backend:9091/telegram/ask",
+        json={
+            "question": message,
+            "chat_id": update.message.chat_id,
+            "user_id": update.message.from_user.id,
+            "user_name": update.message.from_user.username,
+            "first_name": update.message.from_user.first_name,
+            "last_name": update.message.from_user.last_name,
+        },
         headers={"X-API-KEY": os.getenv("API_SECRET_TOKEN")},
         timeout=300,
     )
