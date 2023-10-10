@@ -54,7 +54,7 @@ def token_required(f):
 
 
 @app.route("/ask", methods=["POST"])
-@limiter.limit("5 per minute")
+@limiter.limit("10 per minute")
 @token_required
 def ask():
     data = request.get_json(force=True)
