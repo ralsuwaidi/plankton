@@ -6,6 +6,8 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import os
 from plankton.database import Database
+from functools import wraps
+from dotenv import load_dotenv
 
 
 # Set up logging with time
@@ -20,12 +22,40 @@ limiter = Limiter(
     app=app, key_func=get_remote_address, default_limits=["200 per day", "50 per hour"]
 )
 
+# Define the path to the .env file
+dotenv_path = os.path.join(".env")
+
+# Load the .env file
+load_dotenv(dotenv_path)
+
 
 Database.initialize()
 
 
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        if "X-API-KEY" in request.headers:
+            token = request.headers["X-API-KEY"]
+        if not token or token != os.getenv("API_SECRET_TOKEN"):
+            return (
+                jsonify(
+                    {
+                        "message": "Token is missing or invalid, add a token as a 'X_API_KEY' header"
+                    }
+                ),
+                403,
+            )
+
+        return f(*args, **kwargs)
+
+    return decorated
+
+
 @app.route("/ask", methods=["POST"])
 @limiter.limit("5 per minute")
+@token_required
 def ask():
     data = request.get_json(force=True)
     question = data.get("question", "Who is the minister of finance")

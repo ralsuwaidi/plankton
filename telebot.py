@@ -85,7 +85,11 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     message: str = update.message.text
 
     # Send the user message to the MOF website chatbot API
-    response = requests.post("http://backend:9091/ask", json={"question": message})
+    response = requests.post(
+        "http://backend:9091/ask",
+        json={"question": message},
+        headers={"X-API-KEY": os.getenv("API_SECRET_TOKEN")},
+    )
 
     # Get the response from the MOF website chatbot API
     answer = json.loads(response.text)

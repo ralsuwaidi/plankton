@@ -16,6 +16,8 @@ services:
       context: .
       target: builder
     stop_signal: SIGINT
+    env_file:
+      - .env
     environment:
       - FLASK_SERVER_PORT=9091
     volumes:
