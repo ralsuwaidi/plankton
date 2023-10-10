@@ -92,9 +92,13 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
     # Get the response from the MOF website chatbot API
-    answer = json.loads(response.text)
-    # get only the answer from the response
-    answer = answer["output"]
+
+    try:
+        answer = json.loads(response.text)
+        # get only the answer from the response
+        answer = answer["output"]
+    except:
+        answer = response
 
     logger.info(f"asked: {message}")
     logger.info(f"answer: {answer}")
