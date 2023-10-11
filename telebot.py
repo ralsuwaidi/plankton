@@ -79,6 +79,60 @@ async def start(update: Update, context: CallbackContext) -> None:
     )
 
 
+async def positive(update: Update, context: CallbackContext) -> None:
+    user_message = context.args
+
+    remarks = " ".join(user_message)
+
+    # Send the user message to the MOF website chatbot API
+    response = requests.post(
+        "http://backend:9091/review",
+        json={
+            "sentiment": "positive",
+            "remarks": remarks,
+            "chat_id": update.message.chat_id,
+            "user_id": update.message.from_user.id,
+            "user_name": update.message.from_user.username,
+            "first_name": update.message.from_user.first_name,
+            "last_name": update.message.from_user.last_name,
+            "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        },
+        headers={"X-API-KEY": os.getenv("API_SECRET_TOKEN")},
+        timeout=300,
+    )
+
+    logger.info(response.json())
+
+    await update.message.reply_text(f"{response.json()['message']}")
+
+
+async def improve(update: Update, context: CallbackContext) -> None:
+    user_message = context.args
+
+    remarks = " ".join(user_message)
+
+    # Send the user message to the MOF website chatbot API
+    response = requests.post(
+        "http://backend:9091/review",
+        json={
+            "sentiment": "negative",
+            "remarks": remarks,
+            "chat_id": update.message.chat_id,
+            "user_id": update.message.from_user.id,
+            "user_name": update.message.from_user.username,
+            "first_name": update.message.from_user.first_name,
+            "last_name": update.message.from_user.last_name,
+            "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        },
+        headers={"X-API-KEY": os.getenv("API_SECRET_TOKEN")},
+        timeout=300,
+    )
+
+    logger.info(response.json())
+
+    await update.message.reply_text(f"{response.json()['message']}")
+
+
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Echo the user message by sending it to the MOF website chatbot API and returning the response.
@@ -140,6 +194,8 @@ def main() -> None:
 
     # on different commands - answer in Telegram
     application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("positive", positive))
+    application.add_handler(CommandHandler("improve", improve))
 
     # on non command i.e message - echo the message on Telegram
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
