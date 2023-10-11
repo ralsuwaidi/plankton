@@ -1,3 +1,19 @@
+"""
+This file contains code for a simple Telegram bot that can reply to messages.
+It defines a few command handlers for the /start and /help commands, as well
+as a message handler for non-command messages. The bot runs until the user
+presses Ctrl-C on the command line.
+
+The bot has three main functions:
+1. /start command handler: sends a welcome message to the user and provides instructions on how to use the bot.
+2. /positive command handler: sends a positive message to the MOF website chatbot API.
+3. /improve command handler: sends a negative message to the MOF website chatbot API.
+
+Usage:
+Basic Echobot example, repeats messages.
+Press Ctrl-C on the command line or send a signal to the process to stop the
+bot.
+"""
 #!/usr/bin/env python
 # pylint: disable=unused-argument
 # This program is dedicated to the public domain under the CC0 license.
@@ -46,7 +62,6 @@ from telegram.ext import (
     MessageHandler,
     filters,
 )
-from plankton.database import Database
 
 
 # Define the path to the .env file
@@ -66,7 +81,16 @@ logger = logging.getLogger(__name__)
 
 
 async def start(update: Update, context: CallbackContext) -> None:
-    """Send a message when the command /start is issued."""
+    """
+    Send a message when the command /start is issued.
+
+    Args:
+    - update (telegram.Update): The update object representing the incoming message.
+    - context (telegram.ext.CallbackContext): The context object for the current update.
+
+    Returns:
+    - None
+    """
     user = update.effective_user
     await update.message.reply_markdown(
         f"Hello {user.first_name}, welcome to the Ministry of Finance chatbot!\n\n"
@@ -80,6 +104,16 @@ async def start(update: Update, context: CallbackContext) -> None:
 
 
 async def positive(update: Update, context: CallbackContext) -> None:
+    """
+    Send a positive message to the MOF website chatbot API.
+
+    Args:
+    - update (telegram.Update): The update object representing the incoming message.
+    - context (telegram.ext.CallbackContext): The context object for the current update.
+
+    Returns:
+    - None
+    """
     user_message = context.args
 
     remarks = " ".join(user_message)
@@ -107,6 +141,16 @@ async def positive(update: Update, context: CallbackContext) -> None:
 
 
 async def improve(update: Update, context: CallbackContext) -> None:
+    """
+    Send a negative message to the MOF website chatbot API.
+
+    Args:
+    - update (telegram.Update): The update object representing the incoming message.
+    - context (telegram.ext.CallbackContext): The context object for the current update.
+
+    Returns:
+    - None
+    """
     user_message = context.args
 
     remarks = " ".join(user_message)

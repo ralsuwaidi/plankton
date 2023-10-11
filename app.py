@@ -60,6 +60,9 @@ def token_required(f):
 
 
 def transform_id(user):
+    """
+    Helper function to transform the '_id' field of a user object to a string
+    """
     if "_id" in user:
         user["_id"] = str(user["_id"])
 
@@ -196,7 +199,6 @@ class Telegram(Resource):
             "first_name": data.get("first_name"),
             "last_name": data.get("last_name"),
         }
-
         # Inserting data into the database
         Database.insert("query", insert_data)
 
@@ -205,34 +207,54 @@ class Telegram(Resource):
 
 class Review(Resource):
     @token_required
-    def post(self):
-        data = request.get_json(force=True)
+    class Review(Resource):
+        """
+        A class to handle review creation for users.
 
-        required_fields = [
-            "user_id",
-            "sentiment",
-        ]
-        missing_fields = [field for field in required_fields if field not in data]
+        ...
 
-        if missing_fields:
-            logger.info(f"Missing fields: {missing_fields}")
-            abort(
-                400,
-                message=f"These fields are missing in the request body: {', '.join(missing_fields)}",
-            )
+        Methods
+        -------
+        post()
+            Creates a review for a user.
 
-        user_id = data.get("user_id")
+        """
 
-        # on telegram create user if not in database
-        if user_id not in [user["user_id"] for user in Database.find("users", {})]:
+        def post(self):
+            """
+            Creates a review for a user.
+
+            Returns
+            -------
+            json
+                A JSON object containing a success message.
+
+            Raises
+            ------
+            HTTPException
+                If required fields are missing or if the sentiment is not 'positive' or 'negative'.
+
+            Examples
+            --------
+            To create a review for a user, send a POST request to the endpoint with the following data:
+            {
+                "user_id": "123",
+                "sentiment": "positive",
+                "remarks": "Great experience with the product!"
+            }
+
+            The response will be a JSON object with a success message:
+            {
+                "message": "Review created successfully"
+            }
+            """
+
+            data = request.get_json(force=True)
+
             required_fields = [
-                "chat_id",
                 "user_id",
-                "user_name",
-                "first_name",
-                "last_name",
+                "sentiment",
             ]
-
             missing_fields = [field for field in required_fields if field not in data]
 
             if missing_fields:
@@ -242,38 +264,61 @@ class Review(Resource):
                     message=f"These fields are missing in the request body: {', '.join(missing_fields)}",
                 )
 
-            Database.insert(
-                "users",
-                {
-                    "chat_id": data.get("chat_id"),
-                    "user_id": data.get("user_id"),
-                    "user_name": data.get("user_name"),
-                    "first_name": data.get("first_name"),
-                    "last_name": data.get("last_name"),
-                },
-            )
+            user_id = data.get("user_id")
 
-            logger.info(f"User with ID {user_id} created successfully")
+            # on telegram create user if not in database
+            if user_id not in [user["user_id"] for user in Database.find("users", {})]:
+                required_fields = [
+                    "chat_id",
+                    "user_id",
+                    "user_name",
+                    "first_name",
+                    "last_name",
+                ]
 
-        user = Database.find_one("users", {"user_id": user_id})
-        if user is None:
-            abort(400, message=f"User with ID {user_id} does not exist")
+                missing_fields = [
+                    field for field in required_fields if field not in data
+                ]
 
-        sentiment = data.get("sentiment")
-        if sentiment not in ["positive", "negative"]:
-            abort(400, message=f"Sentiment must be either 'positive' or 'negative'")
+                if missing_fields:
+                    logger.info(f"Missing fields: {missing_fields}")
+                    abort(
+                        400,
+                        message=f"These fields are missing in the request body: {', '.join(missing_fields)}",
+                    )
 
-        insert_data = {
-            "user_id": user_id,
-            "sentiment": sentiment,
-            "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "remarks": data.get("remarks") or "",
-        }
+                Database.insert(
+                    "users",
+                    {
+                        "chat_id": data.get("chat_id"),
+                        "user_id": data.get("user_id"),
+                        "user_name": data.get("user_name"),
+                        "first_name": data.get("first_name"),
+                        "last_name": data.get("last_name"),
+                    },
+                )
 
-        Database.insert("review", insert_data)
-        logger.info(f"Review for user with ID {user_id} created successfully")
+                logger.info(f"User with ID {user_id} created successfully")
 
-        return jsonify({"message": "Review created successfully"})
+            user = Database.find_one("users", {"user_id": user_id})
+            if user is None:
+                abort(400, message=f"User with ID {user_id} does not exist")
+
+            sentiment = data.get("sentiment")
+            if sentiment not in ["positive", "negative"]:
+                abort(400, message=f"Sentiment must be either 'positive' or 'negative'")
+
+            insert_data = {
+                "user_id": user_id,
+                "sentiment": sentiment,
+                "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "remarks": data.get("remarks") or "",
+            }
+
+            Database.insert("review", insert_data)
+            logger.info(f"Review for user with ID {user_id} created successfully")
+
+            return jsonify({"message": "Review created successfully"})
 
 
 # Add the Flask-RESTful resources to the API
