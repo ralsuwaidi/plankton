@@ -6,6 +6,7 @@ from langchain.retrievers.multi_query import MultiQueryRetriever
 from dotenv import load_dotenv
 import os
 from langchain.agents import initialize_agent
+import logging
 
 # Define the base path
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -17,6 +18,16 @@ dotenv_path = os.path.join(BASE_DIR, ".env")
 load_dotenv(dotenv_path)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+# Set up logging with time
+logging.basicConfig(
+    format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
+SYSTEM_MESSAGE = """
+        You are a chatbot trained on the United arab emirates ministry of finance website.
+        """
 
 
 class ChatbotManager:
@@ -93,6 +104,7 @@ class ChatbotManager:
             llm=self.llm,
             verbose=self.agent_verbose,
             max_iterations=self.agent_max_iterations,
+            agent_kwargs={"system_message": SYSTEM_MESSAGE},
             early_stopping_method="generate",
             memory=self.conversational_memory,
         )
