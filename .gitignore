@@ -163,3 +163,4 @@ cython_debug/
 # projectt
 chroma_db
 data/clean_dump
+.DS_Store

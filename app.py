@@ -72,7 +72,6 @@ class Ask(Resource):
     Flask-RESTful resource for handling POST requests to the /ask endpoint
     """
 
-    @limiter.limit("10 per minute")
     @token_required
     def post(self):
         """
